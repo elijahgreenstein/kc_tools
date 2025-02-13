@@ -30,3 +30,18 @@ $ for file in <RAW_DATA_DIR>/IMMA*
 > done
 ```
 
+## Cleaning
+
+Use the python package, `./src/kc_tools`, to clean the preprocessed data in `<PREPROC_DATA_DIR>` and to write the cleaned data to `<PROC_DATA_DIR>`:
+
+```{.python}
+>>> import kc_tools as kc
+>>> import pathlib
+>>> input_dir = pathlib.Path("<PREPROC_DATA_DIR>")
+>>> output_dir = pathlib.Path("<PROC_DATA_DIR>")
+>>> # For the complete Kobe Collection, 1889 to 1961:
+>>> for year in range(1889, 1962):
+...     df = kc.kc_proc.proc_year(year, input_dir)
+...     df.to_csv(output_dir / f"{year}.csv", index=False)
+```
+

@@ -16,8 +16,8 @@ def pts2lines(df, dt_col ="DATETIME", lat_col="LAT", long_col="LONG"):
     :return gdf: The data with a geometry column of linestrings connecting points sequentially.
     :rtype: gpd.GeoDataFrame
     """
-    df = df.sort_by(dt_col) # Ensure that the dates are sorted
-    df = df.drop_na(axis=0) # Remove rows with missing values
+    df = df.sort_values(dt_col) # Ensure that the dates are sorted
+    df = df.dropna(axis=0) # Remove rows with missing values
     res = pd.DataFrame({
             "t1": df[dt_col][:-1].values,
             "t2": df[dt_col][1:].values,

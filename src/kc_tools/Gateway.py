@@ -1,4 +1,36 @@
 """Gateway object for identifying passage of ships with direction.
+
+Example usage:
+
+import kc_tools as kc
+import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
+import numpy as np
+
+# Set up the gateway
+pt1 = (2, 4)
+pt2 = (-2, 3.25)
+G = kc.Gateway(pt1, pt2)
+
+# Classify a grid of points
+x = np.linspace(-10, 10, 50)
+y = np.linspace(-10, 10, 50)
+xmesh, ymesh = np.meshgrid(x, y)
+ys = G.get_ys(x)
+clf = G.classify_array(xmesh, ymesh) > 0
+
+# Plot the classified grid, with an arrow indicating the "positive" side
+fig, ax = plt.subplots()
+# "Positive" points are blue, "negative" points are orange
+ax.scatter(xmesh, ymesh, c=clf, cmap=ListedColormap(["orange", "blue"]), s=0.5)
+# Plot the two points and the line through the points
+ax.scatter(pt1[0], pt1[1], c="black")
+ax.scatter(pt2[0], pt2[1], c="black")
+ax.plot(x, ys, color="black", linewidth=1)
+# Plot the direction of the vector
+ax.quiver(G.midpt[0], G.midpt[1], G.vec[0], G.vec[1], scale=10)
+plt.show()
+
 """
 
 import numpy as np
@@ -24,6 +56,11 @@ def _std_form_params(x1, y1, x2, y2):
     C = _calc_b(A, x1, y1)
     return (np.array([A, B]), C)
 
+def _get_midpt(pt1, pt2):
+    x_mid = pt1[0] + (pt2[0] - pt1[0]) / 2
+    y_mid = pt1[1] + (pt2[1] - pt1[1]) / 2
+    return np.array([x_mid, y_mid])
+
 class Gateway:
     """Gateway object defined as a line between two points.
 
@@ -36,12 +73,16 @@ class Gateway:
     def __init__(self, pt1, pt2):
         self.pt1 = np.array(pt1)
         self.pt2 = np.array(pt2)
+        self.midpt = _get_midpt(pt1, pt2)
         self.line = shapely.LineString([pt1, pt2])
         self.vec, self.offset = _std_form_params(pt1[0], pt1[1], pt2[0], pt2[1])
 
-    def classify(self, pt):
+    def classify_pt(self, pt):
         pt = np.array(pt)
         return self.vec @ pt + self.offset
+
+    def classify_array(self, xs, ys):
+        return self.vec[0] * xs - ys + self.offset
 
     def get_ys(self, xs):
         return self.vec[0] * xs + self.offset

@@ -36,15 +36,16 @@ plt.show()
 import numpy as np
 import shapely
 
+
 def _calc_m(x1, y1, x2, y2):
-    """Calculate the slope, ``m``, of the line between the two points.
-    """
+    """Calculate the slope, ``m``, of the line between the two points."""
     return (y2 - y1) / (x2 - x1)
 
+
 def _calc_b(m, x1, y1):
-    """Calculate the intercept, ``b``, of the line between the two points.
-    """
+    """Calculate the intercept, ``b``, of the line between the two points."""
     return y1 - m * x1
+
 
 def _std_form_params(x1, y1, x2, y2):
     """Get the standard form of the line between the two points:
@@ -56,10 +57,12 @@ def _std_form_params(x1, y1, x2, y2):
     C = _calc_b(A, x1, y1)
     return (np.array([A, B]), C)
 
+
 def _get_midpt(pt1, pt2):
     x_mid = pt1[0] + (pt2[0] - pt1[0]) / 2
     y_mid = pt1[1] + (pt2[1] - pt1[1]) / 2
     return np.array([x_mid, y_mid])
+
 
 class Gateway:
     """Gateway object defined as a line between two points.
@@ -86,4 +89,3 @@ class Gateway:
 
     def get_ys(self, xs):
         return self.vec[0] * xs + self.offset
-

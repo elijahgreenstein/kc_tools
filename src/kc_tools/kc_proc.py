@@ -37,6 +37,7 @@ _DTYPE_ALT = {"id": str, "lat": str, "hour": str}
 # Default output column names
 _OUT_COL = ["DATETIME", "LAT", "LONG", "ID", "DCK"]
 
+
 def load_raw(path):
     """Load raw Kobe Collection data.
 
@@ -54,10 +55,11 @@ def load_raw(path):
         df = pd.read_csv(path, names=_COL_LOAD, dtype=_DTYPE_ALT)
         # Remove white space, and replace empty strings with np.nan values
         df["hour"] = df["hour"].str.strip()
-        df["hour"] = df["hour"].replace('', np.nan)
+        df["hour"] = df["hour"].replace("", np.nan)
         # Convert type back to float
         df["hour"] = df["hour"].astype(float)
     return df
+
 
 def _proc_long180(df):
     """Convert longitude.
@@ -66,20 +68,19 @@ def _proc_long180(df):
     Convert the latter to the former for consistency.
     """
     df["long180"] = df["long"]
-    df["long180"] = df["long180"].case_when([
-        (df["long"] > 18000, df["long"] - 36000)
-    ])
+    df["long180"] = df["long180"].case_when([(df["long"] > 18000, df["long"] - 36000)])
     # Convert to string for processing as coordinate
     df["long180"] = df["long180"].astype(str)
     return df
 
+
 def _proc_coord(df, col):
-    """Process latitude and longitude to degrees to two decimal places.
-    """
+    """Process latitude and longitude to degrees to two decimal places."""
     left = df[col].str.strip().str[:-2]
     right = df[col].str.strip().str[-2:]
     new_col = left + "." + right
     return new_col
+
 
 def proc_kobe(df):
     """Process Kobe Collection dataframe.
@@ -91,20 +92,20 @@ def proc_kobe(df):
     """
     # Process the dataframe if it is not empty.
     if df.shape[0] > 0:
-        df["hour"] = df["hour"] / 100               # Rescale hour
-        df["DATETIME"] = pd.to_datetime(            # Generate datetime field
-            df[["year", "month", "day", "hour"]],
-            errors="coerce"
+        df["hour"] = df["hour"] / 100  # Rescale hour
+        df["DATETIME"] = pd.to_datetime(  # Generate datetime field
+            df[["year", "month", "day", "hour"]], errors="coerce"
         )
-        df = _proc_long180(df)                      # Convert long to -180/180
-        df["LAT"] = _proc_coord(df, "lat")          # Process lat, long
+        df = _proc_long180(df)  # Convert long to -180/180
+        df["LAT"] = _proc_coord(df, "lat")  # Process lat, long
         df["LONG"] = _proc_coord(df, "long180")
-        df["ID"] = df["id"].str.strip()             # Remove whitespace from ids
+        df["ID"] = df["id"].str.strip()  # Remove whitespace from ids
         df = df[_OUT_COL]
     # If dataframe is empty, return empty dataframe with default column names
     else:
         df = pd.DataFrame(columns=_OUT_COL)
     return df
+
 
 def proc_year(yr, path):
     """Process Kobe Collection data by year.
@@ -130,4 +131,3 @@ def proc_year(yr, path):
         else:
             df = pd.concat([df, new_df], axis=0, ignore_index=True)
     return df.sort_values("DATETIME").reset_index(drop=True)
-

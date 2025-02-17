@@ -1,4 +1,11 @@
-"""Gateway object for identifying passage of ships with direction.
+"""Gateway object to identify movement across a line segment, with direction.
+
+The Gateway object is initialized with two points. An equation for the line between the two points is found in standard form: ``Ax + By = C``.[^std_form] By default, ``A`` is set to the slope of the line (usually denoted ``m``) and ``B`` is set to ``-1``. The equation is stored as ``Gateway.vector`` (``[A, B]``) and ``Gateway.offset`` (``C``).
+
+[^std_form]: See Edwin "Jed" Herman and Gilbert Strang, "1.2 Basic Classes of Functions," in *Calculus*, Vol. 1, OpenStax: 2018. <https://openstax.org/books/calculus-volume-1/pages/1-2-basic-classes-of-functions>
+
+Due to this calculation of ``A`` and ``B = -1``, the Gateway vector will, by default, point "south." A Gateway with a positive slope will have a vector that points to the southeast, while a Gateway with a negative slope will have a vector that points to the southwest.
+
 
 Example usage:
 
@@ -89,3 +96,4 @@ class Gateway:
 
     def get_ys(self, xs):
         return self.vec[0] * xs + self.offset
+

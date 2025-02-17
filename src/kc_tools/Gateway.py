@@ -4,7 +4,7 @@ The Gateway object is initialized with two points. An equation for the line betw
 
 [^std_form]: See Edwin "Jed" Herman and Gilbert Strang, "1.2 Basic Classes of Functions," in *Calculus*, Vol. 1, OpenStax: 2018. <https://openstax.org/books/calculus-volume-1/pages/1-2-basic-classes-of-functions>
 
-Due to this calculation of ``A`` and ``B = -1``, the Gateway vector will, by default, point "south." A Gateway with a positive slope will have a vector that points to the southeast, while a Gateway with a negative slope will have a vector that points to the southwest. A horizontal Gateway will have a vector that points straight south.
+Due to this calculation of ``A`` and ``B = -1``, the Gateway vector will, by default, point "south." A Gateway with a positive slope will have a vector that points to the southeast, while a Gateway with a negative slope will have a vector that points to the southwest. A horizontal Gateway will have a vector that points straight south. Hence, points to the south of the line be classified as "positive" while points to the north will be classified as "negative."
 
 
 Example usage:
@@ -80,6 +80,7 @@ class Gateway:
     :type pt2: list, tuple, or np.array
     """
 
+    #TODO: Enable vertical gateway
     def __init__(self, pt1, pt2):
         self.pt1 = np.array(pt1)
         self.pt2 = np.array(pt2)

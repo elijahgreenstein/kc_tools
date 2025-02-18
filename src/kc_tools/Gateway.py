@@ -9,7 +9,7 @@ import numpy as np
 
 # Set up the gateway
 pt1 = (2, 4)
-pt2 = (2, 3.25)
+pt2 = (-2, 3.25)
 G = kc.Gateway(pt1, pt2)
 
 # Classify a grid of points
@@ -29,8 +29,7 @@ ax.scatter(pt2[0], pt2[1], c="black")
 ax.plot(xs, ys, color="black", linewidth=1)
 # Plot the direction of the vector
 ax.quiver(G.midpt[0], G.midpt[1], G.vec[0], G.vec[1], scale=10)
-plt.savefig("./img.jpg")
-#plt.show()
+plt.show()
 
 """
 

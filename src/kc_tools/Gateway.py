@@ -9,14 +9,14 @@ import numpy as np
 
 # Set up the gateway
 pt1 = (2, 4)
-pt2 = (-2, 3.25)
+pt2 = (2, 3.25)
 G = kc.Gateway(pt1, pt2)
 
 # Classify a grid of points
 x = np.linspace(-10, 10, 50)
 y = np.linspace(-10, 10, 50)
 xmesh, ymesh = np.meshgrid(x, y)
-ys = G.get_ys(x)
+xs, ys = G.get_xys(x)
 clf = G.classify_array(xmesh, ymesh) > 0
 
 # Plot the classified grid, with an arrow indicating the "positive" side
@@ -26,10 +26,11 @@ ax.scatter(xmesh, ymesh, c=clf, cmap=ListedColormap(["orange", "blue"]), s=0.5)
 # Plot the two points and the line through the points
 ax.scatter(pt1[0], pt1[1], c="black")
 ax.scatter(pt2[0], pt2[1], c="black")
-ax.plot(x, ys, color="black", linewidth=1)
+ax.plot(xs, ys, color="black", linewidth=1)
 # Plot the direction of the vector
 ax.quiver(G.midpt[0], G.midpt[1], G.vec[0], G.vec[1], scale=10)
-plt.show()
+plt.savefig("./img.jpg")
+#plt.show()
 
 """
 
@@ -103,6 +104,24 @@ class Gateway:
     def classify_array(self, xs, ys):
         return self.vec[0] * xs + self.vec[1] * ys + self.offset
 
-    def get_ys(self, xs):
-        return self.vec[0] * xs + self.offset
+    def get_xys(self, xs):
+        """Get x, y coordinates to plot the line.
+
+        :param xs: An array of x coordinates.
+        :type xs: np.array
+        :return xs: An array of x coordinates.
+        :rtype xs: np.array
+        :return ys: An array of y coordinates.
+        :rtype ys: np.array
+
+        .. note::
+
+           If the gateway is vertical, the y coordinates are set to the input x coordinates and the x coordinates are changed to an array of the same length, but with all values set to :math:`-C` (the offset, but with the sign reversed).
+        """
+        if self.is_vert:
+            ys = xs
+            xs = np.ones(len(xs)) * (-self.offset)
+            return (xs, ys)
+        else:
+            return (xs, self.vec[0] * xs + self.offset)
 

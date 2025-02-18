@@ -101,7 +101,7 @@ class Gateway:
         return self.vec @ pt + self.offset
 
     def classify_array(self, xs, ys):
-        return self.vec[0] * xs - ys + self.offset
+        return self.vec[0] * xs + self.vec[1] * ys + self.offset
 
     def get_ys(self, xs):
         return self.vec[0] * xs + self.offset

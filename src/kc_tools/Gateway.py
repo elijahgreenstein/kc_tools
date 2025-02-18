@@ -48,13 +48,19 @@ def _calc_b(m, x1, y1):
 
 
 def _std_form_params(x1, y1, x2, y2):
-    """Get the standard form of the line between the two points:
+    """Get the standard form of the line between the two points.
 
-    ``Ax + By = C``
+    Returns ``A``, ``B``, and ``C`` of :math:`Ax + By = C`.
     """
-    A = _calc_m(x1, y1, x2, y2)
-    B = -1
-    C = _calc_b(A, x1, y1)
+    # Check for vertical line
+    if x1 == x2:
+        A = 1
+        B = 0 
+        C = -x1
+    else:
+        A = _calc_m(x1, y1, x2, y2)
+        B = -1
+        C = _calc_b(A, x1, y1)
     return (np.array([A, B]), C)
 
 
@@ -82,10 +88,10 @@ class Gateway:
 
     """
 
-    #TODO: Enable vertical gateway
     def __init__(self, pt1, pt2):
         self.pt1 = np.array(pt1)
         self.pt2 = np.array(pt2)
+        self.is_vert = self.pt1[0] == self.pt2[0]
         self.midpt = _get_midpt(pt1, pt2)
         self.line = shapely.LineString([pt1, pt2])
         self.vec, self.offset = _std_form_params(pt1[0], pt1[1], pt2[0], pt2[1])

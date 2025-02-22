@@ -12,19 +12,17 @@ KC Tools assumes a particular use for the Kobe Collection (and ICOADS more gener
 
 * generate lines from the original point data,
 * identify possible ports of call, and
-* identify the number of ships crossing designated ocean spaces.
+* quantify the number of ships crossing designated ocean spaces.
 
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-List of tools and API
+Guides and API
 ------------------------------------------------------------
 
 .. toctree::
    :maxdepth: 2
 
+   overview_data
+   tutorial_suez
    api
 
 Indices and tables

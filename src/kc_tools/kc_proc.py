@@ -31,9 +31,9 @@ import pathlib
 # Default column names on load
 _COL_LOAD = ["year", "month", "day", "hour", "lat_in", "long_in", "id", "dck"]
 # Default data types on load
-_DTYPE_LOAD = {"id": str, "lat": str, "hour": float}
+_DTYPE_LOAD = {"id": str, "lat_in": str, "hour": float}
 # Alternative data types, for cases where "hour" field is only spaces "    "
-_DTYPE_ALT = {"id": str, "lat": str, "hour": str}
+_DTYPE_ALT = {"id": str, "lat_in": str, "hour": str}
 # Default output column names
 _OUT_COL = ["t", "lat", "long", "id", "dck"]
 

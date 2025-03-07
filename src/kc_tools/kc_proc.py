@@ -29,17 +29,17 @@ import pandas as pd
 import pathlib
 
 # Default column names on load
-_COL_LOAD = ["year", "month", "day", "hour", "lat", "long", "id", "DCK"]
+_COL_LOAD = ["year", "month", "day", "hour", "lat_in", "long_in", "id", "dck"]
 # Default data types on load
 _DTYPE_LOAD = {"id": str, "lat": str, "hour": float}
 # Alternative data types, for cases where "hour" field is only spaces "    "
 _DTYPE_ALT = {"id": str, "lat": str, "hour": str}
 # Default output column names
-_OUT_COL = ["DATETIME", "LAT", "LONG", "ID", "DCK"]
+_OUT_COL = ["t", "lat", "long", "id", "dck"]
 
 
 def load_raw(path):
-    """Load raw Kobe Collection data.
+    """Load raw Kobe Collection data with default columns.
 
     :param path: The file to load.
     :type path: str, pathlib.Path
@@ -61,14 +61,16 @@ def load_raw(path):
     return df
 
 
-def _proc_long180(df):
+def _proc_long180(df, l_col):
     """Convert longitude.
 
     Some observations range from -180 to 179.99; others from 0 to 359.99.
     Convert the latter to the former for consistency.
     """
-    df["long180"] = df["long"]
-    df["long180"] = df["long180"].case_when([(df["long"] > 18000, df["long"] - 36000)])
+    df["long180"] = df[l_col]
+    df["long180"] = df["long180"].case_when(
+            [(df[l_col] > 18000, df[l_col] - 36000)]
+            )
     # Convert to string for processing as coordinate
     df["long180"] = df["long180"].astype(str)
     return df
@@ -93,13 +95,13 @@ def proc_kobe(df):
     # Process the dataframe if it is not empty.
     if df.shape[0] > 0:
         df["hour"] = df["hour"] / 100  # Rescale hour
-        df["DATETIME"] = pd.to_datetime(  # Generate datetime field
+        df["t"] = pd.to_datetime(  # Generate datetime field
             df[["year", "month", "day", "hour"]], errors="coerce"
         )
-        df = _proc_long180(df)  # Convert long to -180/180
-        df["LAT"] = _proc_coord(df, "lat")  # Process lat, long
-        df["LONG"] = _proc_coord(df, "long180")
-        df["ID"] = df["id"].str.strip()  # Remove whitespace from ids
+        df = _proc_long180(df, "long_in")  # Convert long to -180/180
+        df["lat"] = _proc_coord(df, "lat_in")  # Process lat, long
+        df["long"] = _proc_coord(df, "long180")
+        df["id"] = df["id"].str.strip()  # Remove whitespace from ids
         df = df[_OUT_COL]
     # If dataframe is empty, return empty dataframe with default column names
     else:
@@ -130,4 +132,4 @@ def proc_year(yr, path):
             pass
         else:
             df = pd.concat([df, new_df], axis=0, ignore_index=True)
-    return df.sort_values("DATETIME").reset_index(drop=True)
+    return df.sort_values("t").reset_index(drop=True)

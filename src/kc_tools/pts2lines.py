@@ -35,9 +35,7 @@ def pts2lines(df, dt_col="t", lat_col="lat", long_col="long"):
         }
     )
     # Generate linestring geometry
-    geometry = res.apply(
+    res["line"] = res.apply(
         lambda r: shapely.LineString([[r.x1, r.y1], [r.x2, r.y2]]), axis=1
     )
-    # Generate geopandas GeoDataFrame
-    gdf = gpd.GeoDataFrame(res, geometry=geometry)
-    return gdf
+    return res[["t1", "t2", "line"]]

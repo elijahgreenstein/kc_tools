@@ -25,6 +25,7 @@ Guides and API
    :maxdepth: 2
 
    overview_data
+   tutorial_proc
    tutorial_suez
    api
 

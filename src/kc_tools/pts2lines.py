@@ -5,7 +5,6 @@ Given a series of points ordered by time, this function creates a series of line
 
 import geopandas as gpd
 import pandas as pd
-import pathlib
 import shapely
 
 

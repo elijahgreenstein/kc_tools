@@ -8,17 +8,17 @@ import pandas as pd
 import shapely
 
 
-def pts2lines(df, dt_col="DATETIME", lat_col="LAT", long_col="LONG"):
+def pts2lines(df, dt_col="t", lat_col="lat", long_col="long"):
     """Generate a dataframe of line segments from point data.
 
     :param df: The data.
     :type df: pd.DataFrame
     :param dt_col: Name of the datetime column.
-    :type dt_col: str, default: "DATETIME"
+    :type dt_col: str, default: "t"
     :param lat_col: Name of the latitude column.
-    :type lat_col: str, default: "LAT"
+    :type lat_col: str, default: "lat"
     :param long_col: Name of the longitude column.
-    :type long_col: str, default: "LONG"
+    :type long_col: str, default: "long"
     :return gdf: The data with a geometry column of linestrings connecting points sequentially.
     :rtype: gpd.GeoDataFrame
     """

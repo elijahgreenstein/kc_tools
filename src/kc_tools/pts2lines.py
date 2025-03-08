@@ -58,6 +58,27 @@ def batch_lines(df, t="t", x="long", y="lat", uid="id"):
     :type uid: str, default: "id"
     :return res: Dataframe of line segments.
     :rtype: pd.DataFrame
+
+    Use ``batch_lines`` to generate line segments for all ships in a dataframe.
+
+    Example usage (set up ``in_dir`` and ``out_dir`` as ``pathlib.Path`` first):
+
+    >>> import kc_tools as kc
+    >>> import pandas as pd
+    >>> dtypes = {"t": str, "lat": float, "long": float, "id": str, "dck": int}
+    >>> for year in range(1889, 1962):  # Full Kobe Collection
+    >>>     df = pd.read_csv(in_dir / f"{year}.csv", dtype=dtypes)
+    >>>     lines = kc.batch_lines(df)
+    >>>     if len(lines) > 0:          # Check for empty dataframes
+    >>>         lines.to_csv(out_dir / f"{year}.csv", index=False)
+
+    To load the data later as a Geopandas GeoDataFrame, use ``shapely.wkt.loads``:
+
+    >>> import pandas as pd
+    >>> import shapely
+    >>> import geopandas as gpd
+    >>> df = pd.read_csv(file)
+    >>> gdf = gpd.GeoDataFrame(df, geometry="line")
     """
     res = []
     for val in df[uid].unique():

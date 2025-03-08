@@ -12,7 +12,7 @@ import shapely
 def pts2lines(df, dt_col="t", lat_col="lat", long_col="long"):
     """Generate a dataframe of line segments from point data.
 
-    :param df: The data.
+    :param df: The point data.
     :type df: pd.DataFrame
     :param dt_col: Name of the datetime column.
     :type dt_col: str, default: "t"
@@ -20,8 +20,8 @@ def pts2lines(df, dt_col="t", lat_col="lat", long_col="long"):
     :type lat_col: str, default: "lat"
     :param long_col: Name of the longitude column.
     :type long_col: str, default: "long"
-    :return gdf: The data with a geometry column of linestrings connecting points sequentially.
-    :rtype: gpd.GeoDataFrame
+    :return res: Dataframe of line segments with time data.
+    :rtype: pd.DataFrame
     """
     df = df.sort_values(dt_col)  # Ensure that the dates are sorted
     df = df.dropna(axis=0)  # Remove rows with missing values
@@ -43,6 +43,23 @@ def pts2lines(df, dt_col="t", lat_col="lat", long_col="long"):
 
 
 def batch_lines(df, t="t", x="long", y="lat", uid="id"):
+    """Generate a dataframe of line segments organized by id.
+
+    For each unique ID, ``pts2lines`` is used to generate line segments for that moving object. The line segments are then concatenated back into a single dataframe.
+
+    :param df: The point data.
+    :type df: pd.DataFrame
+    :param t: Name of the time series column.
+    :type t: str, default: "t"
+    :param x: Name of the x coordinates (longitude) column.
+    :type x: str, default: "long"
+    :param y: Name of the y coordinates (latitude) column.
+    :type y: str, default: "lat"
+    :param uid: Name of the id column.
+    :type uid: str, default: "id"
+    :return res: Dataframe of line segments.
+    :rtype: pd.DataFrame
+    """
     res = []
     for val in df[uid].unique():
         subset = df[df[uid] == val]

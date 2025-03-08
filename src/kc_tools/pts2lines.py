@@ -5,6 +5,7 @@ Given a series of points ordered by time, this function creates a series of line
 
 import geopandas as gpd
 import pandas as pd
+import pathlib
 import shapely
 
 
@@ -39,3 +40,19 @@ def pts2lines(df, dt_col="t", lat_col="lat", long_col="long"):
         lambda r: shapely.LineString([[r.x1, r.y1], [r.x2, r.y2]]), axis=1
     )
     return res[["t1", "t2", "line"]]
+
+
+def batch_lines(df, t="t", x="long", y="lat", uid="id"):
+    res = []
+    for val in df[uid].unique():
+        subset = df[df[uid] == val]
+        if subset.shape[0] > 1: # Must have two or more points in sequence
+            lines = pts2lines(subset)
+            lines["id"] = val
+            res.append(lines)
+        else:
+            pass
+    if len(res) > 0:
+        # Concatenate the results back into a single data frame
+        res = pd.concat(res, axis=0, ignore_index=True)
+    return res

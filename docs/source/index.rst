@@ -6,14 +6,17 @@
 Welcome
 ============================================================
 
-Kobe Collection (KC) Tools is a collection of tools for working with the International Comprehensive Ocean-Atmosphere Data Set (ICOADS). The tools were designed primarily for work with one subset of the ICOADS: the Kobe Collection, hence the name. The Kobe Collection consists of observations from Japanese ship log sheets from 1889 to 1961 digitized by the Japan Meteorological Agency.
+KC Tools is a collection of tools for working with the International Comprehensive Ocean-Atmosphere Data Set (ICOADS). The tools were designed primarily for research on one subset of the ICOADS: the Kobe Collection. The Kobe Collection consists of observations from Japanese ship log sheets from 1889 to 1961 digitized by the Japan Meteorological Agency.
 
-KC Tools assumes a particular use for the Kobe Collection (and ICOADS more generally): the analysis of historical ship movements. Use the default processing tools to extract time stamps and location data for ships. Analytical tools make it possible to:
+The tools in this package facilitate the analysis of historical ship movements. The processing tools extract time and location data and generate lines from point data. The package also provides tools to determine the direction of shipping traffic and to facilitate the generation of networks (graphs).
 
-* generate lines from the original point data,
+Read the tutorials below to learn how to
+
+* clean the data,
+* quantify traffic across particular maritime spaces,
+* calculate voyage times,
 * identify possible ports of call, and
-* quantify the number of ships crossing designated ocean spaces.
-
+* generate port networks.
 
 Guides and API
 ------------------------------------------------------------

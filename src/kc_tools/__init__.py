@@ -1,3 +1,3 @@
 from . import kc_proc
-from .Gateway import Gateway
-from .pts2lines import pts2lines, batch_lines
+from .movement import Gateway
+from .lines import pts2lines, batch_lines

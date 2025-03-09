@@ -1,6 +1,4 @@
-"""Function to convert a series of points to a series of lines.
-
-Given a series of points ordered by time, this function creates a series of lines between each sequential pair of points. The lines are stored in a column with type ``shapely.LineString``.
+"""Tools to convert point data to a series of lines.
 """
 
 import geopandas as gpd
@@ -10,6 +8,8 @@ import shapely
 
 def pts2lines(df, dt_col="t", lat_col="lat", long_col="long"):
     """Generate a dataframe of line segments from point data.
+
+    Given a series of points ordered by time, this function creates a series of lines between each sequential pair of points. The lines are stored in a column with type ``shapely.LineString``.
 
     :param df: The point data.
     :type df: pd.DataFrame

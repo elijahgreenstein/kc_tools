@@ -22,7 +22,6 @@ def get_sequence(data, ports, dist_break, t1="t1", t2="t2", line="line"):
     port_names = list(ports.keys())
 
     # Create "break" column with arbitrarily high value (1000)
-    data["duration"] = data[t2] - data[t1]
     data["BREAK"] = (data["line"].length > dist_break) * 1000
 
     # For each port, identify intersections

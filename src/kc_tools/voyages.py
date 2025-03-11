@@ -4,11 +4,11 @@
 import geopandas as gpd
 import pandas as pd
 
-def get_sequence(traj_df, ports, t1="t1", t2="t2", line="line"):
+def get_sequence(data, ports, dist_break, t1="t1", t2="t2", line="line"):
     """Generate a dataframe column containing ports of call.
 
-    :param traj_df: Dataframe of line segments.
-    :type traj_df: pd.DataFrame
+    :param data: Dataframe of line segments.
+    :type data: pd.DataFrame
     :param ports: Dictionary of port names and geometries.
     :type ports: dict
     :param t1: Name of column in ``traj_df`` containing start times for each line segment.
@@ -19,12 +19,35 @@ def get_sequence(traj_df, ports, t1="t1", t2="t2", line="line"):
     :type line: str, default: "line"
     """
 
-    # TODO: Check intersection with each port.
-    # - Filter for at least one intersection:
-    # df[df[port_names].sum(axis=1) > 0]
+    port_names = list(ports.keys())
 
-    # Will have several columns of port_names
-    # Get indicator variables for intersections, change to integer 0, 1
-    # df[port_names] = df[port_names].astype(int)
-    # Create a column indicating overlaps (sum plus offset)
+    # Create "break" column with arbitrarily high value (1000)
+    data["duration"] = data[t2] - data[t1]
+    data["BREAK"] = (data["line"].length > dist_break) * 1000
+
+    # For each port, identify intersections
+    for port in port_keys:
+        data[port] = data["line"].intersects(ports[port])
+
+    # Change to integer indicators for port intersections
+    data[port_names] = data[port_names].astype(int)
+
+    # Filter for columns with either a "BREAK" or a port intersection
+    intersects = data[data[port_names + ["BREAK"]].sum(axis=1) > 0].copy()
+
+    # Create a column indicating multiple intersections. Lines that intersect
+    # one port will have an overlap value of `0.5`. Lines that intersect two
+    # ports will have an overlap value of `1.5`.
+    intersects["MULTIPLE"] = intersects[port_names].sum(axis=1) - 0.5
+
+    # Get the column with the maximum value of port intersection indicators,
+    # "OVERLAP", and "BREAK".
+    intersects["intersect"] = intersects[
+            port_names + ["BREAK", "MULTIPLE"]
+            ].idxmax(axis=1)
+
+    # Placeholder for final sequence
+    res = []
+    # TODO: Iterate over intersects["intersect"] to handle overlapping ports
+    # TODO: Return the result
     pass

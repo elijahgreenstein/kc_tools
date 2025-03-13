@@ -3,8 +3,36 @@
 
 import geopandas as gpd
 import pandas as pd
+import numpy as np
+import shapely
 
-def get_sequence(data, ports, dist_break, t1="t1", t2="t2", line="line"):
+def _shift_to_360(linestring):
+    """Shift a line from -180 to 180 longitude to 0 to 360 longitude.
+    """
+    x1, y1 = linestring.coords[0]
+    x2, y2 = linestring.coords[1]
+    if x1 < 0:
+        x1 = x1 + 360
+    else:
+        pass
+    if x2 < 0:
+        x2 = x2 + 360
+    else:
+        pass
+    return shapely.LineString(((x1, y1), (x2, y2)))
+
+def get_sequence(
+        data,
+        ports,
+        dist_break,
+        stop_duration,
+        uid="id",
+        t1="t1",
+        t2="t2",
+        line="line",
+        port_label="label",
+        port_geom="geometry",
+        ):
     """Generate a dataframe column containing ports of call.
 
     :param data: Dataframe of line segments.
@@ -19,34 +47,107 @@ def get_sequence(data, ports, dist_break, t1="t1", t2="t2", line="line"):
     :type line: str, default: "line"
     """
 
-    port_names = list(ports.keys())
+    # Confirm single id number and get that id
+    if len(data[uid].unique()) > 1:
+        print("ERROR: Data should only have a single ship id.")
+        return None
+    else:
+        sid = data[uid].unique()[0]
 
-    # Create "break" column with arbitrarily high value (1000)
-    data["BREAK"] = (data["line"].length > dist_break) * 1000
 
-    # For each port, identify intersections
-    for port in port_keys:
-        data[port] = data["line"].intersects(ports[port])
+    # Confirm that t1, t2 are of type datetime64
+    if t1 not in data.select_dtypes(np.datetime64).columns:
+        data[t1] = pd.to_datetime(data[t1])
+    if t2 not in data.select_dtypes(np.datetime64).columns:
+        data[t2] = pd.to_datetime(data[t2])
 
-    # Change to integer indicators for port intersections
-    data[port_names] = data[port_names].astype(int)
+    # Add a timedelta column (length of time between points 1 and 2)
+    data["_timedelta"] = data[t2] - data[t1]
+    # Add an hours column
+    data["_hours"] = data["_timedelta"] / np.timedelta64(1, "h")
 
-    # Filter for columns with either a "BREAK" or a port intersection
-    intersects = data[data[port_names + ["BREAK"]].sum(axis=1) > 0].copy()
+    # Add a column of linestrings shifted to 0--360 longitude scale
+    data["_l360"] = data[line].apply(lambda x: _shift_to_360(x))
 
-    # Create a column indicating multiple intersections. Lines that intersect
-    # one port will have an overlap value of `0.5`. Lines that intersect two
-    # ports will have an overlap value of `1.5`.
-    intersects["MULTIPLE"] = intersects[port_names].sum(axis=1) - 0.5
+    # Identify possible stops
+    data["_poss_stop"] = data["_hours"] >= stop_duration
 
-    # Get the column with the maximum value of port intersection indicators,
-    # "OVERLAP", and "BREAK".
-    intersects["intersect"] = intersects[
-            port_names + ["BREAK", "MULTIPLE"]
-            ].idxmax(axis=1)
+    # Identify -180--180 break points
+    data["_br180"] = data[line].length >= dist_break
+    # Identify 0--360 break points
+    data["_br360"] = data["_l360"].length >= dist_break
+    # Identify break points
+    data["_break"] = (data["_br180"]) & (data["_br360"])
 
-    # Placeholder for final sequence
-    res = []
-    # TODO: Iterate over intersects["intersect"] to handle overlapping ports
-    # TODO: Return the result
-    pass
+    # Filter for possible stops, break points
+    subset = data[(data["_poss_stop"]) | (data["_break"])].copy()
+
+    # Get index of "_break", "line", "t1", "t2" columns
+    brk_idx = data.columns.get_loc("_break")
+    ln_idx = data.columns.get_loc(line)
+    t1_idx = data.columns.get_loc(t1)
+    t2_idx = data.columns.get_loc(t2)
+
+    # Set up result: A list of edges containing the following information:
+    #
+    # - "id": The ship id
+    # - "p1": The node from which the ship departed
+    # - "p2": The node to which the ship arrived next
+    # - "t_depart_p1": The time of departure
+    # - "t_arrive_p2": The time of arrival
+    # - "num_intersect": The number of intersections (possibly multiple ports)
+
+    res = [["id", "node1", "node2", "t_dep_p1", "t_arr_p2", "num_intersect"]]
+
+    # Set up initial node, with blank departure
+    prev = "_START"
+    t_dep = None
+
+
+    for row in subset.itertuples(index=False):
+        # Check for "break" points
+        if row[brk_idx]:
+            node = "_BREAK"
+            n_int = 1
+            edge = [sid, prev, node, t_dep, row[t1_idx], n_int]
+            prev = node
+            t_dep = row[t2_idx]
+        else:
+            # Get the number of intersections with the port geometries
+            intersections = ports[port_geom].intersects(row[ln_idx])
+            n_int = len(ports[intersections])
+            # If no intersections, then store as "_NO_INTERSECT"
+            if n_int == 0:
+                node = "_NO_INTERSECT"
+                edge = [sid, prev, node, t_dep, row[t1_idx], n_int]
+                prev = node
+                t_dep = row[t2_idx]
+            # If one intersection, then only one node from that line
+            elif n_int == 1:
+                node = ports[intersections][port_label].values[0]
+                edge = [sid, prev, node, t_dep, row[t1_idx], n_int]
+                prev = node
+                t_dep = row[t2_idx]
+            # If two intersections, then extract two nodes
+            elif n_int == 2:
+                # TODO: Extract both nodes
+                node = "MULTIPLE_2"
+                edge = [sid, prev, node, t_dep, row[t1_idx], n_int]
+                prev = node
+                t_dep = row[t2_idx]
+            # If three intersections, then extract three nodes
+            elif n_int == 3:
+                # TODO: Extract all three nodes
+                node = "MULTIPLE_3"
+                edge = [sid, prev, node, t_dep, row[t1_idx], n_int]
+                prev = node
+                t_dep = row[t2_idx]
+            # Case of more than three intersections, handle manually
+            else:
+                node = "_MULTIPLE"
+                edge = [sid, prev, node, t_dep, row[t1_idx], n_int]
+                prev = node
+                t_dep = row[t2_idx]
+        res.append(edge)
+    return res
+

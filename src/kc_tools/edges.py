@@ -162,9 +162,16 @@ def get_edges(
     return pd.DataFrame(res[1:], columns=res[0])
 
 
-def make_digraph(edges, from_node="node1", to_node="node2", weighted=True,
-                 remove_unknown = True, unk="_UNKNOWN",
-                 breaks="_BREAK", self_loops=False):
+def make_digraph(
+    edges,
+    from_node="node1",
+    to_node="node2",
+    weighted=True,
+    remove_unknown=True,
+    unk="_UNKNOWN",
+    breaks="_BREAK",
+    self_loops=False,
+):
     """Generate a digraph from a dataframe of edges.
 
     :param edges: Dataframe of edges.
@@ -196,12 +203,12 @@ def make_digraph(edges, from_node="node1", to_node="node2", weighted=True,
     # Get the sequence of target nodes
     seq = data[to_node].values
 
-    for idx_to in range(1, len(seq)):   # Iterate over targets from index 1
+    for idx_to in range(1, len(seq)):  # Iterate over targets from index 1
         idx_from = idx_to - 1
         n1 = seq[idx_from]
         n2 = seq[idx_to]
         if (n1 == breaks) or (n2 == breaks):
-            pass    # Skip the edge if it is on a "break"
+            pass  # Skip the edge if it is on a "break"
         elif (n1 != n2) or (n1 == n2 and self_loops):
             # Increment weight if generating a weighted graph
             if DG.has_edge(n1, n2) and weighted:

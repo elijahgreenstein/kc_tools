@@ -33,18 +33,28 @@ def get_edge_seq(
         port_label="label",
         port_geom="geometry",
         ):
-    """Generate dataframe of edges between designated geometries.
+    """Generate dataframe of directed edges between designated node geometries.
 
     :param data: Dataframe of line segments.
     :type data: pd.DataFrame
-    :param ports: Dictionary of port names and geometries.
-    :type ports: dict
-    :param t1: Name of column in ``traj_df`` containing start times for each line segment.
+    :param ports: Dataframe of node geometries.
+    :type ports: pd.DataFrame
+    :param dist_break: Minimum gap between points (length of line segment) to mark as a "break" in the sequence.
+    :type dist_break: int
+    :param stop_duration: Minimum duration between point observations ("duration" of the line segment) to mark as a possible stop.
+    :type stop_duration: int
+    :param uid: Name of column in ``data`` containing the ship id.
+    :type uid: str, default: "id"
+    :param t1: Name of column in ``data`` containing start times for each line segment.
     :type t1: str, default: "t1"
-    :param t2: Name of column in ``traj_df`` containing end times for each line segment.
+    :param t2: Name of column in ``data`` containing end times for each line segment.
     :type t2: str, default: "t2"
-    :param line: Name of column in ``traj_df`` containing line geometries.
+    :param line: Name of column in ``data`` containing line geometries.
     :type line: str, default: "line"
+    :param port_label: Name of column in ``ports`` containing labels of geometries.
+    :type port_label: str, default: "label"
+    :param port_geom: Name of column in ``ports`` containing geometries.
+    :type port_geom: str, default: "geometry"
     """
 
     # Confirm single id number and get that id

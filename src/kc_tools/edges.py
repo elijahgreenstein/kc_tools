@@ -21,7 +21,7 @@ def _shift_to_360(linestring):
         pass
     return shapely.LineString(((x1, y1), (x2, y2)))
 
-def get_edge_seq(
+def get_edges(
         data,
         nodes,
         dist_break,

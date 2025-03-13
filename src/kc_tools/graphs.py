@@ -109,9 +109,9 @@ def get_node_seq(
 
     node_columns = ["id", "node", "t1", "t2", "line", "num_intersect"]
     unk_columns = ["id", "t1", "t2", "line"]
-    node_seq = []   # Placeholder for node sequence
-    unk = []    # Placeholder for possible stops, but lacking intersections
-    add_node = True # Add node(s), unless unknown
+    node_seq = []  # Placeholder for node sequence
+    unk = []  # Placeholder for possible stops, but lacking intersections
+    add_node = True  # Add node(s), unless unknown
 
     for row in subset.itertuples(index=False):
         print(row[brk_idx])
@@ -125,7 +125,7 @@ def get_node_seq(
             # If no intersections, then store in `unk` list
             if n_int == 0:
                 unk.append([sid, row[t1_i], row[t2_i], row[l_i]])
-                add_node = False # Do not add nodes to node seq
+                add_node = False  # Do not add nodes to node seq
             # If one intersection, get node
             elif n_int == 1:
                 label = nodes[intersections][node_label].values[0]

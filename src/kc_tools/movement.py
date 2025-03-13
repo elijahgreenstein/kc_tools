@@ -55,7 +55,7 @@ def _std_form_params(x1, y1, x2, y2):
     # Check for vertical line
     if x1 == x2:
         A = 1
-        B = 0 
+        B = 0
         C = -x1
     else:
         A = _calc_m(x1, y1, x2, y2)
@@ -123,4 +123,3 @@ class Gateway:
             return (xs, ys)
         else:
             return (xs, self.vec[0] * xs + self.offset)
-

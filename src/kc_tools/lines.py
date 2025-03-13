@@ -90,8 +90,8 @@ def batch_lines(df, t="t", x="long", y="lat", uid="id", retain_pts=True):
     res = []
     for val in df[uid].unique():
         subset = df[df[uid] == val]
-        if subset.shape[0] > 1: # Must have two or more points in sequence
-            lines = pts2lines(subset, retain_pts = retain_pts)
+        if subset.shape[0] > 1:  # Must have two or more points in sequence
+            lines = pts2lines(subset, retain_pts=retain_pts)
             lines["id"] = val
             res.append(lines)
         else:

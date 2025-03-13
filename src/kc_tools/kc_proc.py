@@ -68,9 +68,7 @@ def _proc_long180(df, l_col):
     Convert the latter to the former for consistency.
     """
     df["long180"] = df[l_col]
-    df["long180"] = df["long180"].case_when(
-            [(df[l_col] > 18000, df[l_col] - 36000)]
-            )
+    df["long180"] = df["long180"].case_when([(df[l_col] > 18000, df[l_col] - 36000)])
     # Convert to string for processing as coordinate
     df["long180"] = df["long180"].astype(str)
     return df

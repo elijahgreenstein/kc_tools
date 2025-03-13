@@ -6,9 +6,9 @@ import pandas as pd
 import numpy as np
 import shapely
 
+
 def _shift_to_360(linestring):
-    """Shift a line from -180 to 180 longitude to 0 to 360 longitude.
-    """
+    """Shift a line from -180 to 180 longitude to 0 to 360 longitude."""
     x1, y1 = linestring.coords[0]
     x2, y2 = linestring.coords[1]
     if x1 < 0:
@@ -21,18 +21,19 @@ def _shift_to_360(linestring):
         pass
     return shapely.LineString(((x1, y1), (x2, y2)))
 
+
 def get_edges(
-        data,
-        nodes,
-        dist_break,
-        stop_duration,
-        uid="id",
-        t1="t1",
-        t2="t2",
-        line="line",
-        node_label="label",
-        node_geom="geometry",
-        ):
+    data,
+    nodes,
+    dist_break,
+    stop_duration,
+    uid="id",
+    t1="t1",
+    t2="t2",
+    line="line",
+    node_label="label",
+    node_geom="geometry",
+):
     """Generate dataframe of directed edges between designated node geometries.
 
     :param data: Dataframe of line segments.
@@ -63,7 +64,6 @@ def get_edges(
         return None
     else:
         sid = data[uid].unique()[0]
-
 
     # Confirm that t1, t2 are of type datetime64
     if t1 not in data.select_dtypes(np.datetime64).columns:
@@ -113,7 +113,6 @@ def get_edges(
     prev = "_START"
     t_dep = None
 
-
     for row in subset.itertuples(index=False):
         # Check for "break" points
         if row[brk_idx]:
@@ -160,4 +159,3 @@ def get_edges(
                 t_dep = row[t2_idx]
         res.append(edge)
     return res
-

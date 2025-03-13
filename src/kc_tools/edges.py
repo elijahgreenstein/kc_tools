@@ -21,7 +21,7 @@ def _shift_to_360(linestring):
         pass
     return shapely.LineString(((x1, y1), (x2, y2)))
 
-def get_sequence(
+def get_edge_seq(
         data,
         ports,
         dist_break,
@@ -33,7 +33,7 @@ def get_sequence(
         port_label="label",
         port_geom="geometry",
         ):
-    """Generate a dataframe column containing ports of call.
+    """Generate dataframe of edges between designated geometries.
 
     :param data: Dataframe of line segments.
     :type data: pd.DataFrame

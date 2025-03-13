@@ -2,6 +2,7 @@
 """
 
 import geopandas as gpd
+import networkx as nx
 import numpy as np
 import pandas as pd
 import shapely
@@ -125,9 +126,9 @@ def get_edges(
             # Get the number of intersections with the port geometries
             intersections = nodes[node_geom].intersects(row[ln_idx])
             n_int = len(nodes[intersections])
-            # If no intersections, then store as "_NO_INTERSECT"
+            # If no intersections, then store as "_UNKNOWN"
             if n_int == 0:
-                node = "_NO_INTERSECT"
+                node = "_UNKNOWN"
                 edge = [sid, prev, node, t_dep, row[t1_idx], n_int]
                 prev = node
                 t_dep = row[t2_idx]
@@ -159,3 +160,54 @@ def get_edges(
                 t_dep = row[t2_idx]
         res.append(edge)
     return pd.DataFrame(res[1:], columns=res[0])
+
+
+def make_digraph(edges, from_node="node1", to_node="node2", weighted=True,
+                 remove_unknown = True, unk="_UNKNOWN",
+                 breaks="_BREAK", self_loops=False):
+    """Generate a digraph from a dataframe of edges.
+
+    :param edges: Dataframe of edges.
+    :type edges: pd.DataFrame
+    :param from_node: Name of the column with origin node.
+    :type from_node: str, "node1"
+    :param to_node: Name of the column with the target node.
+    :type to_node: str, default: "node2"
+    :param weighted: Optionally add weight of ``1`` for each edge.
+    :type weighted: bool, default: True
+    :param remove_unknown: Remove edges with unknown nodes.
+    :type remove_unknown: bool, default: True
+    :param unk: Node string indicating a "stop" without an intersection.
+    :type unk: str, default: "_UNKNOWN"
+    :param breaks: String indicating a "break" in the graph.
+    :type breaks: str, default: "_BREAK"
+    :param self_loops: If true, allow self-loop edges.
+    :type self_loops: bool, default: False
+    """
+    # Initialize directed graph
+    DG = nx.DiGraph()
+
+    # Optionally remove "stops" without a node intersection
+    if remove_unknown:
+        data = edges[(edges[from_node] != unk) & (edges[to_node] != unk)].copy()
+    else:
+        data = edges.copy()
+
+    # Get the sequence of target nodes
+    seq = data[to_node].values
+
+    for idx_to in range(1, len(seq)):   # Iterate over targets from index 1
+        idx_from = idx_to - 1
+        n1 = seq[idx_from]
+        n2 = seq[idx_to]
+        if (n1 == breaks) or (n2 == breaks):
+            pass    # Skip the edge if it is on a "break"
+        elif (n1 != n2) or (n1 == n2 and self_loops):
+            # Increment weight if generating a weighted graph
+            if DG.has_edge(n1, n2) and weighted:
+                DG[n1][n2]["weight"] += 1
+            else:
+                DG.add_edge(n1, n2, weight=1)
+        else:
+            pass
+    return DG

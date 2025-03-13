@@ -1,4 +1,4 @@
-"""Tools to identify ports of call on a given voyage.
+"""Tools to identify edges between nodes.
 """
 
 import geopandas as gpd
@@ -23,25 +23,25 @@ def _shift_to_360(linestring):
 
 def get_edge_seq(
         data,
-        ports,
+        nodes,
         dist_break,
         stop_duration,
         uid="id",
         t1="t1",
         t2="t2",
         line="line",
-        port_label="label",
-        port_geom="geometry",
+        node_label="label",
+        node_geom="geometry",
         ):
     """Generate dataframe of directed edges between designated node geometries.
 
     :param data: Dataframe of line segments.
     :type data: pd.DataFrame
-    :param ports: Dataframe of node geometries.
-    :type ports: pd.DataFrame
-    :param dist_break: Minimum gap between points (length of line segment) to mark as a "break" in the sequence.
+    :param nodes: Dataframe of node geometries.
+    :type nodes: pd.DataFrame
+    :param dist_break: Minimum gap between points (length of line segment) to mark as a "break" in the graph.
     :type dist_break: int
-    :param stop_duration: Minimum duration between point observations ("duration" of the line segment) to mark as a possible stop.
+    :param stop_duration: Minimum duration between point observations ("duration" of the line segment) to mark as a possible node intersection.
     :type stop_duration: int
     :param uid: Name of column in ``data`` containing the ship id.
     :type uid: str, default: "id"
@@ -51,10 +51,10 @@ def get_edge_seq(
     :type t2: str, default: "t2"
     :param line: Name of column in ``data`` containing line geometries.
     :type line: str, default: "line"
-    :param port_label: Name of column in ``ports`` containing labels of geometries.
-    :type port_label: str, default: "label"
-    :param port_geom: Name of column in ``ports`` containing geometries.
-    :type port_geom: str, default: "geometry"
+    :param node_label: Name of column in ``nodes`` containing labels of geometries.
+    :type node_label: str, default: "label"
+    :param node_geom: Name of column in ``nodes`` containing geometries.
+    :type node_geom: str, default: "geometry"
     """
 
     # Confirm single id number and get that id
@@ -105,7 +105,7 @@ def get_edge_seq(
     # - "p2": The node to which the ship arrived next
     # - "t_depart_p1": The time of departure
     # - "t_arrive_p2": The time of arrival
-    # - "num_intersect": The number of intersections (possibly multiple ports)
+    # - "num_intersect": The number of intersections (possibly multiple nodes)
 
     res = [["id", "node1", "node2", "t_dep_p1", "t_arr_p2", "num_intersect"]]
 
@@ -124,8 +124,8 @@ def get_edge_seq(
             t_dep = row[t2_idx]
         else:
             # Get the number of intersections with the port geometries
-            intersections = ports[port_geom].intersects(row[ln_idx])
-            n_int = len(ports[intersections])
+            intersections = nodes[node_geom].intersects(row[ln_idx])
+            n_int = len(nodes[intersections])
             # If no intersections, then store as "_NO_INTERSECT"
             if n_int == 0:
                 node = "_NO_INTERSECT"
@@ -134,7 +134,7 @@ def get_edge_seq(
                 t_dep = row[t2_idx]
             # If one intersection, then only one node from that line
             elif n_int == 1:
-                node = ports[intersections][port_label].values[0]
+                node = nodes[intersections][node_label].values[0]
                 edge = [sid, prev, node, t_dep, row[t1_idx], n_int]
                 prev = node
                 t_dep = row[t2_idx]

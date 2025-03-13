@@ -6,7 +6,7 @@ import pandas as pd
 import shapely
 
 
-def pts2lines(df, dt_col="t", lat_col="lat", long_col="long"):
+def pts2lines(df, dt_col="t", lat_col="lat", long_col="long", retain_pts=True):
     """Generate a dataframe of line segments from point data.
 
     Given a series of points ordered by time, this function creates a series of lines between each sequential pair of points. The lines are stored in a column with type ``shapely.LineString``.
@@ -19,6 +19,8 @@ def pts2lines(df, dt_col="t", lat_col="lat", long_col="long"):
     :type lat_col: str, default: "lat"
     :param long_col: Name of the longitude column.
     :type long_col: str, default: "long"
+    :param retain_pts: Retains point data in dataframe if true.
+    :type retain_pts: bool, default: True
     :return res: Dataframe of line segments with time data.
     :rtype: pd.DataFrame
     """
@@ -38,10 +40,13 @@ def pts2lines(df, dt_col="t", lat_col="lat", long_col="long"):
     res["line"] = res.apply(
         lambda r: shapely.LineString([[r.x1, r.y1], [r.x2, r.y2]]), axis=1
     )
-    return res[["t1", "t2", "line"]]
+    if retain_pts:
+        return res[["t1", "t2", "x1", "y1", "x2", "y2", "line"]]
+    else:
+        return res[["t1", "t2", "line"]]
 
 
-def batch_lines(df, t="t", x="long", y="lat", uid="id"):
+def batch_lines(df, t="t", x="long", y="lat", uid="id", retain_pts=True):
     """Generate a dataframe of line segments organized by id.
 
     For each unique ID, ``pts2lines`` is used to generate line segments for that moving object. The line segments are then concatenated back into a single dataframe.
@@ -56,6 +61,8 @@ def batch_lines(df, t="t", x="long", y="lat", uid="id"):
     :type y: str, default: "lat"
     :param uid: Name of the id column.
     :type uid: str, default: "id"
+    :param retain_pts: Retains point data in dataframe if true.
+    :type retain_pts: bool, default: True
     :return res: Dataframe of line segments.
     :rtype: pd.DataFrame
 
@@ -84,7 +91,7 @@ def batch_lines(df, t="t", x="long", y="lat", uid="id"):
     for val in df[uid].unique():
         subset = df[df[uid] == val]
         if subset.shape[0] > 1: # Must have two or more points in sequence
-            lines = pts2lines(subset)
+            lines = pts2lines(subset, retain_pts = retain_pts)
             lines["id"] = val
             res.append(lines)
         else:

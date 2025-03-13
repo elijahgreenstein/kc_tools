@@ -2,8 +2,8 @@
 """
 
 import geopandas as gpd
-import pandas as pd
 import numpy as np
+import pandas as pd
 import shapely
 
 
@@ -158,4 +158,4 @@ def get_edges(
                 prev = node
                 t_dep = row[t2_idx]
         res.append(edge)
-    return res
+    return pd.DataFrame(res[1:], columns=res[0])

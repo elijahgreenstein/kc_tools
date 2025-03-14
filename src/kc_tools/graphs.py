@@ -57,6 +57,8 @@ def get_node_seq(
     :type node_label: str, default: "label"
     :param node_geom: Name of column in ``nodes`` containing geometries.
     :type node_geom: str, default: "geometry"
+    :return (node_seq, unk): A tuple containing a node sequence and "unknown" line segments.
+    :rtype: (pd.DataFrame, pd.DataFrame)
     """
     # Confirm single id number and get that id
     if len(data[uid].unique()) > 1:
@@ -153,7 +155,21 @@ def get_node_seq(
 
 
 def add_edges_GDL(node_seq, GDL, breaks="_BREAK", weighted=True, self_loops=False):
-    """Add edges to a "graph of direct linkages" (GDL)."""
+    """Add edges to a "graph of direct linkages" (GDL).
+
+    :param node_seq: Sequence of nodes to add to the graph.
+    :type node_seq: pd.Series, list
+    :param GDL: Graph of direct linkages.
+    :type GDL: nx.DiGraph
+    :param breaks: String indicating a break in the node sequence.
+    :type breaks: str, default: "_BREAK"
+    :param weighted: Create a weighted graph if true.
+    :type weighted: bool, default: True
+    :param self_loops: Allow self loops.
+    :type self_loops: bool, default: False
+    :return GDL: Graph of direct linkages updated with edges from node sequence.
+    :rtype GDL: nx.DiGraph
+    """
     # Ensure that graph is nx.DiGraph
     if type(GDL) != nx.DiGraph:
         raise TypeError("GDL must be a networkx DiGraph.")
@@ -172,7 +188,21 @@ def add_edges_GDL(node_seq, GDL, breaks="_BREAK", weighted=True, self_loops=Fals
 
 
 def add_edges_GAL(node_seq, GAL, breaks="_BREAK", weighted=True, self_loops=False):
-    """Add edges to a "graph of all linkages" (GAL)."""
+    """Add edges to a "graph of all linkages" (GAL).
+
+    :param node_seq: Sequence of nodes to add to the graph.
+    :type node_seq: pd.Series, list
+    :param GAL: Graph of all linkages.
+    :type GAL: nx.Graph
+    :param breaks: String indicating a break in the node sequence.
+    :type breaks: str, default: "_BREAK"
+    :param weighted: Create a weighted graph if true.
+    :type weighted: bool, default: True
+    :param self_loops: Allow self loops.
+    :type self_loops: bool, default: False
+    :return GAL: Graph of all linkages updated with edges from node sequence.
+    :rtype GAL: nx.Graph
+    """
     # Ensure that graph is nx.Graph
     if type(GAL) != nx.Graph:
         raise TypeError("GAL must be a networkx Graph.")

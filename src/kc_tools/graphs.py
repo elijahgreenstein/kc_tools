@@ -114,7 +114,6 @@ def get_node_seq(
     add_node = True  # Add node(s), unless unknown
 
     for row in subset.itertuples(index=False):
-        print(row[brk_idx])
         if row[brk_idx]:
             # Break is automatically not a multi-intersection (1 intersection)
             node = [[sid, "_BREAK", row[t1_i], row[t2_i], row[l_i], 1]]
@@ -151,6 +150,70 @@ def get_node_seq(
     node_seq = pd.DataFrame(node_seq, columns=node_columns)
     unk = pd.DataFrame(unk, columns=unk_columns)
     return (node_seq, unk)
+
+
+def add_edges_GDL(
+    node_seq,
+    GDL,
+    breaks="_BREAK",
+    weighted=True,
+    self_loops=False
+):
+    """Add edges to a "graph of direct linkages" (GDL).
+    """
+    # Ensure that graph is nx.DiGraph
+    if type(GDL) != nx.DiGraph:
+        raise TypeError("GDL must be a networkx DiGraph.")
+    else:
+        # Copy graph so that changes are not made to original graph
+        graph = GDL.copy()
+        for from_node, to_node in zip(node_seq[:-1], node_seq[1:]):
+            if from_node == breaks or to_node == breaks:
+                pass
+            else:
+                if graph.has_edge(from_node, to_node) and weighted:
+                    graph[from_node][to_node]["weight"] += 1
+                else:
+                    graph.add_edge(from_node, to_node, weight=1)
+        return graph
+
+
+def add_edges_GAL(
+    node_seq,
+    GAL,
+    breaks="_BREAK",
+    weighted=True,
+    self_loops=False
+):
+    """Add edges to a "graph of all linkages" (GAL).
+    """
+    # Ensure that graph is nx.Graph
+    if type(GAL) != nx.Graph:
+        raise TypeError("GAL must be a networkx Graph.")
+    else:
+        # Copy graph so that changes are not made to original graph
+        graph = GAL.copy()
+        # Remove break and get unique nodes
+        node_set = node_seq[node_seq != breaks].unique()
+        # Create edges between every pair of nodes
+        if self_loops:
+            idx_add = 0
+        else:
+            idx_add = 1
+        edges = []
+        for idx1 in range(len(node_set) - 1):
+            for idx2 in range(idx1 + idx_add, len(node_set)):
+                edges.append((node_set[idx1], node_set[idx2]))
+        # Increment weights if weighted, or simply add edges
+        if weighted:
+            for edge in edges:
+                if graph.has_edge(edge[0], edge[1]):
+                    graph[edge[0]][edge[1]]["weight"] += 1
+                else:
+                    graph.add_edge(edge[0], edge[1], weight=1)
+        else:
+            graph.add_edges_from(edges)
+        return graph
 
 
 def make_digraph(

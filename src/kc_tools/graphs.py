@@ -169,6 +169,10 @@ def add_edges_GDL(node_seq, GDL, breaks="_BREAK", weighted=True, self_loops=Fals
     :type self_loops: bool, default: False
     :return GDL: Graph of direct linkages updated with edges from node sequence.
     :rtype GDL: nx.DiGraph
+
+    A "graph of direct linkages" (GDL) is a directed graph in which edges represent the movement of ships from one node to the next. Given a voyage from port A to B to C, the graph will consist of directed edges from A to B and from B to C, without an edge from A to C.[#GDL_ref]_
+
+    .. [#GDL_ref] César Ducruet and Theo Notteboom, "The worldwide maritime network of container shipping: spatial structure and regional dynamics," *Global Networks* 12, no. 3 (2012): 402--3.
     """
     # Ensure that graph is nx.DiGraph
     if type(GDL) != nx.DiGraph:
@@ -202,6 +206,10 @@ def add_edges_GAL(node_seq, GAL, breaks="_BREAK", weighted=True, self_loops=Fals
     :type self_loops: bool, default: False
     :return GAL: Graph of all linkages updated with edges from node sequence.
     :rtype GAL: nx.Graph
+
+    A "graph of all linkages" (GDL) is an undirected graph in which edges represent the co-occurrence of nodes on a voyage by a given ship. Given a voyage from port A to B to C, the graph will consist of undirected edges between A and B, between A and C, and between B and C.[#GDL_ref]_
+
+    .. [#GDL_ref] César Ducruet and Theo Notteboom, "The worldwide maritime network of container shipping: spatial structure and regional dynamics," *Global Networks* 12, no. 3 (2012): 402--3.
     """
     # Ensure that graph is nx.Graph
     if type(GAL) != nx.Graph:

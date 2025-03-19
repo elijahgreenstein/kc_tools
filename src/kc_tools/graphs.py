@@ -34,6 +34,7 @@ def get_node_seq(
     line="line",
     node_label="label",
     node_geom="geometry",
+    node_pt="point",
 ):
     """Generate a sequence of nodes from a sequence of line segments.
 
@@ -121,30 +122,35 @@ def get_node_seq(
             node = [[sid, "_BREAK", row[t1_i], row[t2_i], row[l_i], 1]]
         else:
             # Get the number of intersections with the node geometries
-            intersections = nodes[node_geom].intersects(row[l_i])
-            n_int = len(nodes[intersections])
+            intsec = nodes[node_geom].intersects(row[l_i])
+            n_int = len(nodes[intsec])
             # If no intersections, then store in `unk` list
             if n_int == 0:
                 unk.append([sid, row[t1_i], row[t2_i], row[l_i]])
                 add_node = False  # Do not add nodes to node seq
             # If one intersection, get node
             elif n_int == 1:
-                label = nodes[intersections][node_label].values[0]
+                label = nodes[intsec][node_label].values[0]
                 node = [[sid, label, row[t1_i], row[t2_i], row[l_i], n_int]]
             # If two intersections, then extract two nodes and add to node_seq
             elif n_int == 2:
-                # TODO: Extract both nodes
-                label = "MULTIPLE_2"
-                node = [[sid, label, row[t1_i], row[t2_i], n_int]]
+                # label = "MULTIPLE_2"
+                # node = [[sid, label, row[t1_i], row[t2_i], row[l_i], n_int]]
+                cur_line = row[l_i] # Get the linestring
+                node_chk = nodes[intsec] # Get the nodes to check
+                labels = _handle_multi2(cur_line, node_chk, node_label, node_pt)
+                node = []
+                for lbl in labels:
+                    node += [[sid, lbl, row[t1_i], row[t2_i], row[l_i], n_int]]
             # If three intersections, then extract three nodes
             elif n_int == 3:
                 # TODO: Extract all three nodes
                 label = "MULTIPLE_3"
-                node = [[sid, label, row[t1_i], row[t2_i], n_int]]
+                node = [[sid, label, row[t1_i], row[t2_i], row[l_i], n_int]]
             # Case of more than three intersections, handle manually
             else:
                 label = "_MANUAL"
-                node = [[sid, label, row[t1_i], row[t2_i], n_int]]
+                node = [[sid, label, row[t1_i], row[t2_i], row[l_i], n_int]]
         if add_node:
             node_seq += node
         else:
@@ -152,6 +158,44 @@ def get_node_seq(
     node_seq = pd.DataFrame(node_seq, columns=node_columns)
     unk = pd.DataFrame(unk, columns=unk_columns)
     return (node_seq, unk)
+
+
+def _handle_multi2(line, intersections, node_label, node_pt):
+    """Get a sequence of two nodes that a single line intersects.
+    :param line: The line segment.
+    :type line: shapely.LineString
+    :param intersections: The intersected node data.
+    :type intersections: gpd.GeoDataFrame
+    :param node_label: Name of the column containing node labels.
+    :type node_label: str
+    :param node_pt: Name of the column containing the node point geometries.
+    :type node_pt: str
+    :return labels: Tuple of labels, ordered by time.
+    :type labels: (str, str)
+    """
+    # Reset indices
+    intersections = intersections.reset_index(drop=True)
+    # Get the two nodes
+    node1 = intersections.iloc[0, :]
+    node2 = intersections.iloc[1, :]
+    # Get the points of the line segment, in order
+    p1 = shapely.Point(line.coords[0])
+    p2 = shapely.Point(line.coords[-1])
+    # Get the distances from each point to each node
+    p1_to_node1 = shapely.distance(p1, node1[node_pt])
+    p2_to_node1 = shapely.distance(p2, node1[node_pt])
+    p1_to_node2 = shapely.distance(p1, node2[node_pt])
+    p2_to_node2 = shapely.distance(p2, node2[node_pt])
+
+    # Compare distances
+    if p1_to_node1 < p2_to_node1 and p1_to_node2 > p2_to_node2:
+        labels = (node1[node_label], node2[node_label])
+    elif p1_to_node1 > p2_to_node1 and p1_to_node2 < p2_to_node2:
+        labels = (node2[node_label], node1[node_label])
+    else:
+        # Indicate if manual identification is necessary
+        labels = ("_MULTI2_MANUAL", "_MULTI2_MANUAL")
+    return labels
 
 
 def add_edges_GDL(node_seq, GDL, breaks="_BREAK", weighted=True, self_loops=False):

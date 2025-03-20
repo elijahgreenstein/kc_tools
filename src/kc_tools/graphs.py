@@ -134,8 +134,8 @@ def get_node_seq(
                 node = [[sid, label, row[t1_i], row[t2_i], row[l_i], n_int]]
             # If two or more intersections, use helper function to get sequence
             else:
-                cur_line = row[l_i] # Get the linestring
-                node_chk = nodes[intsec] # Get the nodes to check
+                cur_line = row[l_i]  # Get the linestring
+                node_chk = nodes[intsec]  # Get the nodes to check
                 labels = _handle_multi(cur_line, node_chk, node_label, node_pt)
                 node = []
                 for lbl in labels:
@@ -152,6 +152,7 @@ def get_node_seq(
 def _handle_multi(line, intsec, node_label, node_pt):
     """Get a sequence of nodes from multiple intersections.
 
+    :param line: The line segment intersecting multiple nodes.
     :type line: shapely.LineString
     :param intsec: The intersected node data.
     :type intsec: gpd.GeoDataFrame

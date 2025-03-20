@@ -84,7 +84,7 @@ class Gateway:
 
     .. note:: Due to the default calculation of :math:`A=m` and :math:`B=-1`, the Gateway vector will, by default, point "south" unless the Gateway is vertical. A Gateway with a positive slope will have a vector that points to the southeast, while a Gateway with a negative slope will have a vector that points to the southwest. A horizontal Gateway will have a vector that points due south. Hence, points to the south of the line will be classified as "positive" while points to the north will be classified as "negative." In the case of vertical Gateways, however, the vector will point due east, and points to the east of the line will be classified as "positive."
 
-    .. [#gen_form] See Edwin "Jed" Herman and Gilbert Strang, "1.2 Basic Classes of Functions," in *Calculus*, Vol. 1, OpenStax: 2018.  <https://openstax.org/books/calculus-volume-1/pages/1-2-basic-classes-of-functions>
+    .. [#gen_form] See Edwin "Jed" Herman and Gilbert Strang, "1.2 Basic Classes of Functions," in *Calculus*, Vol. 1 (OpenStax: 2018).  <https://openstax.org/books/calculus-volume-1/pages/1-2-basic-classes-of-functions>
 
     """
 

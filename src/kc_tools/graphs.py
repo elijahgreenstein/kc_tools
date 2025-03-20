@@ -60,6 +60,20 @@ def get_node_seq(
     :type node_geom: str, default: "geometry"
     :return (node_seq, unk): A tuple containing a node sequence and "unknown" line segments.
     :rtype: (pd.DataFrame, pd.DataFrame)
+
+    When a line segment intersects multiple nodes, the sequence of those nodes is determined as follows:
+
+    * The node points are projected onto the line running through the line segment.
+    * The direction of movement along the line segment is determined: if the ``x`` coordinate (longitude) of the segment start is greater than the segment endpoint, then the line is moving from west to east; otherwise, it is moving from east to west.
+    * The projected node coordinates are sorted by their ``x`` coordinate: if the line segment moves from east to west, the nodes are sorted in ascending order; otherwise, the nodes are sorted in descending order.
+
+    To calculate the projection for each node, [#orth_proj]_ first the start of the line segment (:math:`l_1`) is moved to the origin. The endpoint of the line segment (`l_2`) is then similarly repositioned to :math:`u`: :math:`u = l_2 - l_1`. The projection :math:`p_i` for each node :math:`n_i` is calculated as:
+
+    .. math::
+
+       p_i = \\frac{n_i \cdot u}{u \cdot u} u
+
+    .. [#orth_proj] See the "Projection Formula" in Dan Margalit, Joseph Rabinoff, and Ben Williams, "Orthogonal Sets," in *Interactive Linear Algebra: UBC edition* (2024), <https://personal.math.ubc.ca/~tbjw/ila/orthogonal-sets.html>.
     """
     # Confirm single id number and get that id
     if len(data[uid].unique()) > 1:
@@ -79,7 +93,7 @@ def get_node_seq(
     # Add an hours column
     data["_hours"] = data["_timedelta"] / np.timedelta64(1, "h")
 
-    # Add a column of linestrings shifted to 0--360 longitude scale
+# Add a column of linestrings shifted to 0--360 longitude scale
     data["_l360"] = data[line].apply(lambda x: _shift_to_360(x))
 
     # Identify possible stops
@@ -162,14 +176,6 @@ def _handle_multi(line, intsec, node_label, node_pt):
     :type node_pt: str
     :return labels: Tuple of labels, ordered by time.
     :type labels: (str, str)
-
-    This function determines the sequence of nodes in the case of multiple node intersections as follows:
-
-    * It projects the node points onto the line running through the line segment.
-    * It determines the direction of movement along the line segment by determining if the ``x`` coordinate (longitude) is increasing from one end of the line to the other, or if it is decreasing.
-    * It sorts the projected node coordinates by their ``x`` coordinate. It sorts in ascending order if the line segment moves from west to east; it sorts in descending order if the line segment moves from east to west.
-
-    The function returns the node labels in sequence.
     """
     line1 = np.array(line.coords[0])
     line2 = np.array(line.coords[1])

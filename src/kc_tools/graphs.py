@@ -138,7 +138,7 @@ def get_node_seq(
                 # node = [[sid, label, row[t1_i], row[t2_i], row[l_i], n_int]]
                 cur_line = row[l_i] # Get the linestring
                 node_chk = nodes[intsec] # Get the nodes to check
-                labels = _handle_multi2(cur_line, node_chk, node_label, node_pt)
+                labels = _handle_multi(cur_line, node_chk, node_label, node_pt)
                 node = []
                 for lbl in labels:
                     node += [[sid, lbl, row[t1_i], row[t2_i], row[l_i], n_int]]
@@ -158,6 +158,64 @@ def get_node_seq(
     node_seq = pd.DataFrame(node_seq, columns=node_columns)
     unk = pd.DataFrame(unk, columns=unk_columns)
     return (node_seq, unk)
+
+
+def _handle_multi(line, intsec, node_label, node_pt):
+    """Get a sequence of nodes from multiple intersections.
+
+    :type line: shapely.LineString
+    :param intsec: The intersected node data.
+    :type intsec: gpd.GeoDataFrame
+    :param node_label: Name of the column containing node labels.
+    :type node_label: str
+    :param node_pt: Name of the column containing the node point geometries.
+    :type node_pt: str
+    :return labels: Tuple of labels, ordered by time.
+    :type labels: (str, str)
+
+    This function determines the sequence of nodes in the case of multiple node intersections as follows:
+
+    * It projects the node points onto the line running through the line segment.
+    * It determines the direction of movement along the line segment by determining if the ``x`` coordinate (longitude) is increasing from one end of the line to the other, or if it is decreasing.
+    * It sorts the projected node coordinates by their ``x`` coordinate. It sorts in ascending order if the line segment moves from west to east; it sorts in descending order if the line segment moves from east to west.
+
+    The function returns the node labels in sequence.
+    """
+    line1 = np.array(line.coords[0])
+    line2 = np.array(line.coords[1])
+    # Check for vertical line (if vertical handle manually)
+    if line1[0] == line2[0]:
+        return ("_MULTI_MANUAL",) * len(intsec)
+    # Get coordinates of point as ``np.array``
+    intsec["_coord"] = intsec[node_pt].apply(lambda x: np.array(x.coords[0]))
+    # Move the line start to the origin; reposition the line stop and nodes
+    line1_adj = np.array((0, 0))
+    line2_adj = line2 - line1
+    intsec["_adj"] = intsec["_coord"].apply(lambda x: x - line1)
+    # Project nodes onto the line spanned by adjusted line stop
+    intsec["_proj_adj"] = intsec["_adj"].apply(lambda x: _proj_xu(x, line2_adj))
+    # Move the coordinates back to original area
+    intsec["_proj"] = intsec["_proj_adj"].apply(lambda x: x + line1)
+    # Get the ``x`` coordinates of the projection
+    intsec["_x"] = intsec["_proj"].apply(lambda x: x[0])
+    # Check that ``x`` values are unique; handle matching ``x`` values manually
+    if len(intsec) != len(intsec["_x"].unique()):
+        return ("_MULTI_MANUAL",) * len(intsec)
+    # Determine whether to sort ascending or descending
+    if line1[0] < line2[0]:
+        ascending = True
+    else:
+        ascending = False
+    intsec = intsec.sort_values("_x", ascending=ascending)
+    # Return the sorted labels
+    return tuple(intsec[node_label].values)
+
+
+def _proj_xu(x, u):
+    """Project vector ``x`` onto the line spanned by ``u``."""
+
+    return np.dot(x, u) / np.dot(u, u) * u
+
 
 
 def _handle_multi2(line, intersections, node_label, node_pt):

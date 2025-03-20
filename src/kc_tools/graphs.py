@@ -177,6 +177,8 @@ def _handle_multi(line, intsec, node_label, node_pt):
     :return labels: Tuple of labels, ordered by time.
     :type labels: (str, str)
     """
+    # Create a copy of the intersections
+    intsec = intsec.copy()
     line1 = np.array(line.coords[0])
     line2 = np.array(line.coords[1])
     # Check for vertical line (if vertical handle manually)
